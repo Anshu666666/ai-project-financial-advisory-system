@@ -215,10 +215,14 @@ def main():
         ),
     }
 
-    if len(sys.argv) > 1 and sys.argv[1] == "--demo":
-        # Run default demo directly
-        evaluate_and_display(presets["1"])
-        return 0
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "--demo":
+            evaluate_and_display(presets["1"])
+            return 0
+        elif sys.argv[1] == "--all":
+            for p in presets.values():
+                evaluate_and_display(p)
+            return 0
 
     print("Choose an option:")
     print("  [1] Run Preset 1: Young High-Growth Techie (Aggressive)")
