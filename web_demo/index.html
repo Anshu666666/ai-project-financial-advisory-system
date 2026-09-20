@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinWise AI – Hybrid Intelligent Financial Advisory System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-dark: #0a0e17;
+      --card-bg: rgba(18, 26, 43, 0.75);
+      --card-border: rgba(56, 189, 248, 0.15);
+      --accent-cyan: #00f2fe;
+      --accent-blue: #4facfe;
+      --accent-green: #10b981;
+      --accent-yellow: #f59e0b;
+      --accent-red: #ef4444;
+      --accent-purple: #8b5cf6;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at 10% 10%, #0d1527 0%, var(--bg-dark) 90%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 28px;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      margin-bottom: 24px;
+      box-shadow: var(--glass-shadow);
+    }
+
+    .logo-badge {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+    }
+
+    .logo-title h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(90deg, #fff, #93c5fd);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .logo-title p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .syllabus-pill {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Grid Layout */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 1024px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: var(--glass-shadow);
+      margin-bottom: 24px;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .card:hover {
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #38bdf8;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Preset Buttons */
+    .preset-selector {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .preset-btn {
+      flex: 1;
+      min-width: 80px;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      color: var(--text-main);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .preset-btn:hover, .preset-btn.active {
+      background: linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(79, 172, 254, 0.2));
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    /* Form Inputs */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .form-label {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .form-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--accent-cyan);
+      font-weight: 600;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.1);
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent-cyan);
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--accent-cyan);
+    }
+
+    select, input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 10px 14px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      color: white;
+      font-size: 14px;
+      outline: none;
+      font-family: inherit;
+    }
+
+    /* Output Section */
+    .results-header {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--stat-color, var(--accent-cyan));
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-main);
+    }
+
+    .stat-sub {
+      font-size: 12px;
+      margin-top: 4px;
+      color: var(--stat-color, #34d399);
+      font-weight: 500;
+    }
+
+    /* Visual Charts & Meters */
+    .charts-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 768px) {
+      .charts-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .chart-container {
+      position: relative;
+      height: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Fuzzy Membership Bars */
+    .fuzz-meter-row {
+      margin-bottom: 12px;
+    }
+
+    .fuzz-bar-bg {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .fuzz-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.3s ease;
+    }
+
+    /* Rule Traces Accordion */
+    .rule-pill {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .rule-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .rule-badge {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .badge-triggered {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
+    .badge-skipped {
+      background: rgba(148, 163, 184, 0.1);
+      color: #94a3b8;
+    }
+
+    .rule-explanation {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="logo-badge">
+        <div class="logo-icon">⚡</div>
+        <div class="logo-title">
+          <h1>FinWise AI Advisor</h1>
+          <p>Hybrid Intelligent Advisory Core (Fuzzy Logic + Expert System)</p>
+        </div>
+      </div>
+      <div class="syllabus-pill">
+        <span>🎓 5 Units AI Syllabus Covered</span>
+      </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="dashboard-grid">
+      <!-- Left: User Profile Controls -->
+      <aside>
+        <div class="card">
+          <div class="card-title">⚡ Quick Presets</div>
+          <div class="preset-selector">
+            <button class="preset-btn active" onclick="loadPreset('techie')">Young Techie</button>
+            <button class="preset-btn" onclick="loadPreset('family')">Family (Debt)</button>
+            <button class="preset-btn" onclick="loadPreset('retiree')">Pre-Retiree</button>
+          </div>
+
+          <div class="card-title">👤 User Financial Facts</div>
+          
+          <div class="form-group">
+            <div class="form-label-row">
+              <span class="form-label">Age</span>
+              <span class="form-val" id="val-age">24 yrs</span>
+            </div>
+            <input type="range" id="input-age" min="18" max="75" value="24" oninput="recompute()">
+          </div>
+
+          <div class="form-group">
+            <div class="form-label-row">
+              <span class="form-label">Monthly Gross Income (₹)</span>
+              <span class="form-val" id="val-income">₹1,50,000</span>
+            </div>
+            <input type="range" id="input-income" min="20000" max="600000" step="5000" value="150000" oninput="recompute()">
+          </div>
+
+          <div class="form-group">
+            <div class="form-label-row">
+              <span class="form-label">Monthly Expenses (₹)</span>
+              <span class="form-val" id="val-expenses">₹40,000</span>
+            </div>
+            <input type="range" id="input-expenses" min="10000" max="300000" step="5000" value="40000" oninput="recompute()">
+          </div>
+
+          <div class="form-group">
+            <div class="form-label-row">
+              <span class="form-label">Monthly EMI / Debt (₹)</span>
+              <span class="form-val" id="val-emi">₹0</span>
+            </div>
+            <input type="range" id="input-emi" min="0" max="200000" step="2000" value="0" oninput="recompute()">
+          </div>
+
+          <div class="form-group">
+            <div class="form-label-row">
+              <span class="form-label">Liquid Savings (₹)</span>
+              <span class="form-val" id="val-savings">₹3,00,000</span>
+            </div>
+            <input type="range" id="input-savings" min="0" max="5000000" step="25000" value="300000" oninput="recompute()">
+          </div>
+
+          <div class="form-group">
+            <div class="form-label-row">
+              <span class="form-label">Loss / Risk Tolerance</span>
+              <span class="form-val" id="val-loss">85 / 100</span>
+            </div>
+            <input type="range" id="input-loss" min="0" max="100" value="85" oninput="recompute()">
+          </div>
+
+          <div class="form-group">
+            <div class="form-label-row">
+              <span class="form-label">Investment Horizon (Years)</span>
+              <span class="form-val" id="val-horizon">15 yrs</span>
+            </div>
+            <input type="range" id="input-horizon" min="1" max="25" value="15" oninput="recompute()">
+          </div>
+        </div>
+      </aside>
+
+      <!-- Right: AI Advisory Analytics -->
+      <main>
+        <!-- Top Stats Row -->
+        <div class="results-header">
+          <div class="stat-card" style="--stat-color: #00f2fe;">
+            <div class="stat-label">Fuzzy Risk Appetite</div>
+            <div class="stat-value" id="stat-risk-score">83.7</div>
+            <div class="stat-sub" id="stat-risk-cat">AGGRESSIVE</div>
+          </div>
+
+          <div class="stat-card" style="--stat-color: #10b981;">
+            <div class="stat-label">Debt-to-Income (DTI)</div>
+            <div class="stat-value" id="stat-dti">0.0%</div>
+            <div class="stat-sub" id="stat-dti-status">HEALTHY (&lt;30%)</div>
+          </div>
+
+          <div class="stat-card" style="--stat-color: #f59e0b;">
+            <div class="stat-label">Emergency Buffer</div>
+            <div class="stat-value" id="stat-emergency">7.5 Mo</div>
+            <div class="stat-sub" id="stat-emergency-status">ADEQUATE BUFFER</div>
+          </div>
+
+          <div class="stat-card" style="--stat-color: #8b5cf6;">
+            <div class="stat-label">Investable Surplus</div>
+            <div class="stat-value" id="stat-surplus">₹1,10,000</div>
+            <div class="stat-sub">MONTHLY SURPLUS</div>
+          </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="charts-row">
+          <div class="card" style="margin-bottom: 0;">
+            <div class="card-title">📈 Deterministic Asset Allocation</div>
+            <div class="chart-container">
+              <canvas id="assetChart"></canvas>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom: 0;">
+            <div class="card-title">🧠 Fuzzy Mamdani Firing Strengths</div>
+            <div style="padding-top: 10px;">
+              <div class="fuzz-meter-row">
+                <div class="form-label-row">
+                  <span class="form-label">Aggressive Consequent (&alpha;)</span>
+                  <span class="form-val" id="alpha-agg">1.00</span>
+                </div>
+                <div class="fuzz-bar-bg"><div class="fuzz-bar-fill" id="bar-agg" style="background: #00f2fe; width: 100%;"></div></div>
+              </div>
+
+              <div class="fuzz-meter-row">
+                <div class="form-label-row">
+                  <span class="form-label">Moderate Consequent (&alpha;)</span>
+                  <span class="form-val" id="alpha-mod">0.00</span>
+                </div>
+                <div class="fuzz-bar-bg"><div class="fuzz-bar-fill" id="bar-mod" style="background: #f59e0b; width: 0%;"></div></div>
+              </div>
+
+              <div class="fuzz-meter-row">
+                <div class="form-label-row">
+                  <span class="form-label">Conservative Consequent (&alpha;)</span>
+                  <span class="form-val" id="alpha-cons">0.00</span>
+                </div>
+                <div class="fuzz-bar-bg"><div class="fuzz-bar-fill" id="bar-cons" style="background: #10b981; width: 0%;"></div></div>
+              </div>
+
+              <p id="fuzzy-rationale-text" style="font-size: 13px; color: var(--text-muted); margin-top: 18px; line-height: 1.4;"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Forward Chaining Rule Audit Log -->
+        <div class="card" style="margin-top: 24px;">
+          <div class="card-title">🔍 Production Rule Execution Audit Log (Forward Chaining)</div>
+          <div id="rule-traces-container"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // Pure JS Implementation of Mamdani FIS & Expert Engine
+    function trimf(x, a, b, c) {
+      if (x <= a || x >= c) return 0.0;
+      if (a < x && x <= b) return (b !== a) ? (x - a) / (b - a) : 1.0;
+      if (b < x && x < c) return (c !== b) ? (c - x) / (c - b) : 1.0;
+      return 0.0;
+    }
+
+    function trapmf(x, a, b, c, d) {
+      if (a === b && x <= b) return 1.0;
+      if (c === d && x >= c) return 1.0;
+      if (x <= a || x >= d) return 0.0;
+      if (a < x && x < b) return (b !== a) ? (x - a) / (b - a) : 1.0;
+      if (b <= x && x <= c) return 1.0;
+      if (c < x && x < d) return (d !== c) ? (d - x) / (d - c) : 1.0;
+      return 0.0;
+    }
+
+    let chartInstance = null;
+
+    function initChart() {
+      const ctx = document.getElementById('assetChart').getContext('2d');
+      chartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Equity', 'Debt / Bonds', 'Gold', 'Cash Buffer'],
+          datasets: [{
+            data: [74, 16, 5, 5],
+            backgroundColor: ['#00f2fe', '#8b5cf6', '#f59e0b', '#10b981'],
+            borderWidth: 0,
+            hoverOffset: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: '#94a3b8', boxWidth: 12, padding: 16 } }
+          }
+        }
+      });
+    }
+
+    function recompute() {
+      const age = parseFloat(document.getElementById('input-age').value);
+      const income = parseFloat(document.getElementById('input-income').value);
+      const expenses = parseFloat(document.getElementById('input-expenses').value);
+      const emi = parseFloat(document.getElementById('input-emi').value);
+      const savings = parseFloat(document.getElementById('input-savings').value);
+      const loss = parseFloat(document.getElementById('input-loss').value);
+      const horizon = parseFloat(document.getElementById('input-horizon').value);
+
+      // Update Labels
+      document.getElementById('val-age').innerText = `${age} yrs`;
+      document.getElementById('val-income').innerText = `₹${income.toLocaleString()}`;
+      document.getElementById('val-expenses').innerText = `₹${expenses.toLocaleString()}`;
+      document.getElementById('val-emi').innerText = `₹${emi.toLocaleString()}`;
+      document.getElementById('val-savings').innerText = `₹${savings.toLocaleString()}`;
+      document.getElementById('val-loss').innerText = `${loss} / 100`;
+      document.getElementById('val-horizon').innerText = `${horizon} yrs`;
+
+      // 1. Fuzzification
+      const mu_age_young = trapmf(age, 18, 18, 26, 36);
+      const mu_age_middle = trimf(age, 28, 42, 56);
+      const mu_age_senior = trapmf(age, 48, 60, 80, 80);
+
+      const mu_loss_low = trapmf(loss, 0, 0, 20, 40);
+      const mu_loss_med = trimf(loss, 30, 50, 70);
+      const mu_loss_high = trapmf(loss, 60, 80, 100, 100);
+
+      const mu_horiz_short = trapmf(horizon, 0, 0, 2, 4);
+      const mu_horiz_med = trimf(horizon, 3, 7, 12);
+      const mu_horiz_long = trapmf(horizon, 8, 15, 30, 30);
+
+      // Consequents
+      const alpha_agg = Math.max(
+        Math.min(mu_age_young, mu_loss_high, mu_horiz_long),
+        Math.min(mu_age_middle, mu_loss_high, mu_horiz_long)
+      );
+      const alpha_mod = Math.max(
+        Math.min(mu_age_young, mu_loss_med, mu_horiz_med),
+        Math.min(mu_age_middle, mu_loss_med, mu_horiz_med),
+        Math.min(mu_age_senior, mu_loss_med, mu_horiz_med)
+      );
+      const alpha_cons = Math.max(
+        mu_loss_low,
+        mu_horiz_short,
+        Math.min(mu_age_senior, mu_horiz_short)
+      );
+
+      // Centroid Defuzzification
+      let num = 0, den = 0;
+      for (let i = 0; i <= 100; i++) {
+        let y = i;
+        let c_cons = Math.min(alpha_cons, trapmf(y, 0, 0, 25, 40));
+        let c_mod = Math.min(alpha_mod, trimf(y, 30, 50, 70));
+        let c_agg = Math.min(alpha_agg, trapmf(y, 60, 75, 100, 100));
+        let mu_y = Math.max(c_cons, c_mod, c_agg);
+        num += y * mu_y;
+        den += mu_y;
+      }
+      const crisp_score = den > 0.0001 ? (num / den) : 50.0;
+      const risk_cat = crisp_score < 35 ? 'CONSERVATIVE' : (crisp_score <= 70 ? 'MODERATE' : 'AGGRESSIVE');
+
+      // Update Top Stats
+      document.getElementById('stat-risk-score').innerText = crisp_score.toFixed(1);
+      document.getElementById('stat-risk-cat').innerText = risk_cat;
+
+      const dti = (income > 0) ? (emi / income) * 100 : 100;
+      document.getElementById('stat-dti').innerText = `${dti.toFixed(1)}%`;
+      document.getElementById('stat-dti-status').innerText = dti > 40 ? '🔴 HIGH RISK' : (dti > 30 ? '🟡 MODERATE' : '🟢 HEALTHY');
+
+      const ef_target = expenses * 6;
+      const ef_months = expenses > 0 ? (savings / expenses).toFixed(1) : 0;
+      document.getElementById('stat-emergency').innerText = `${ef_months} Mo`;
+      document.getElementById('stat-emergency-status').innerText = savings >= ef_target ? '🟢 ADEQUATE' : '🔴 DEFICIT';
+
+      const surplus = Math.max(0, income - expenses - emi);
+      document.getElementById('stat-surplus').innerText = `₹${surplus.toLocaleString()}`;
+
+      // Update Fuzzy Bars
+      document.getElementById('alpha-agg').innerText = alpha_agg.toFixed(2);
+      document.getElementById('bar-agg').style.width = `${alpha_agg * 100}%`;
+      document.getElementById('alpha-mod').innerText = alpha_mod.toFixed(2);
+      document.getElementById('bar-mod').style.width = `${alpha_mod * 100}%`;
+      document.getElementById('alpha-cons').innerText = alpha_cons.toFixed(2);
+      document.getElementById('bar-cons').style.width = `${alpha_cons * 100}%`;
+      document.getElementById('fuzzy-rationale-text').innerText = `Centroid defuzzification generated a crisp score of ${crisp_score.toFixed(1)}/100, placing the investor in the '${risk_cat}' risk profile.`;
+
+      // Asset Allocation Model
+      const cash = horizon <= 3 ? 10.0 : 5.0;
+      const gold = risk_cat === 'MODERATE' ? 10.0 : 5.0;
+      let base_eq = 15.0 + (crisp_score / 100.0) * 65.0;
+      if (horizon >= 10) base_eq += 5.0;
+      if (horizon <= 3) base_eq -= 15.0;
+      if (age > 50) base_eq -= (age - 50) * 0.8;
+      const max_eq = Math.max(10.0, 100.0 - cash - gold - 10.0);
+      const equity = Math.max(10.0, Math.min(max_eq, Math.round(base_eq * 10) / 10));
+      const debt = Math.round((100.0 - (equity + gold + cash)) * 10) / 10;
+
+      if (chartInstance) {
+        chartInstance.data.datasets[0].data = [equity, debt, gold, cash];
+        chartInstance.update();
+      }
+
+      // Rule Traces
+      const traces = [
+        {
+          id: 'RULE_DTI_01',
+          name: 'Debt-to-Income Risk Assessment',
+          triggered: dti > 40,
+          exp: dti > 40 ? `DTI is ${dti.toFixed(1)}%, exceeding the safe 40% threshold. Debt restructuring prioritized.` : `DTI of ${dti.toFixed(1)}% is healthy.`
+        },
+        {
+          id: 'RULE_EMERGENCY_02',
+          name: '6-Month Emergency Buffer Rule',
+          triggered: savings < ef_target,
+          exp: savings < ef_target ? `Emergency buffer has a shortfall of ₹${(ef_target - savings).toLocaleString()}. Safety reserve required.` : `Emergency fund is fully funded (${ef_months} months covered).`
+        },
+        {
+          id: 'RULE_ALLOC_03',
+          name: 'Aggressive Compounding Allocation',
+          triggered: risk_cat === 'AGGRESSIVE' && horizon >= 7,
+          exp: `High risk appetite with ${horizon}-year horizon warrants high equity allocation (${equity}%).`
+        },
+        {
+          id: 'RULE_ALLOC_04',
+          name: 'Capital Preservation Allocation',
+          triggered: risk_cat === 'CONSERVATIVE' || horizon <= 3,
+          exp: `Conservative profile or short horizon demands high debt/cash focus (${debt}% debt + ${cash}% cash).`
+        }
+      ];
+
+      const container = document.getElementById('rule-traces-container');
+      container.innerHTML = '';
+      traces.forEach(t => {
+        const div = document.createElement('div');
+        div.className = 'rule-pill';
+        div.innerHTML = `
+          <div class="rule-header">
+            <span style="font-weight: 600; font-size: 14px;">(${t.id}) ${t.name}</span>
+            <span class="rule-badge ${t.triggered ? 'badge-triggered' : 'badge-skipped'}">${t.triggered ? 'TRIGGERED' : 'SKIPPED'}</span>
+          </div>
+          <div class="rule-explanation">${t.exp}</div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function loadPreset(name) {
+      document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+
+      if (name === 'techie') {
+        document.getElementById('input-age').value = 24;
+        document.getElementById('input-income').value = 150000;
+        document.getElementById('input-expenses').value = 40000;
+        document.getElementById('input-emi').value = 0;
+        document.getElementById('input-savings').value = 300000;
+        document.getElementById('input-loss').value = 85;
+        document.getElementById('input-horizon').value = 15;
+      } else if (name === 'family') {
+        document.getElementById('input-age').value = 38;
+        document.getElementById('input-income').value = 200000;
+        document.getElementById('input-expenses').value = 70000;
+        document.getElementById('input-emi').value = 90000;
+        document.getElementById('input-savings').value = 200000;
+        document.getElementById('input-loss').value = 45;
+        document.getElementById('input-horizon').value = 7;
+      } else if (name === 'retiree') {
+        document.getElementById('input-age').value = 58;
+        document.getElementById('input-income').value = 250000;
+        document.getElementById('input-expenses').value = 60000;
+        document.getElementById('input-emi').value = 5000;
+        document.getElementById('input-savings').value = 3000000;
+        document.getElementById('input-loss').value = 15;
+        document.getElementById('input-horizon').value = 2;
+      }
+      recompute();
+    }
+
+    window.onload = function() {
+      initChart();
+      recompute();
+    };
+  </script>
+</body>
+</html>
