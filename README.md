@@ -43,26 +43,26 @@ This gives your team of 4 a standout project that fulfills **both** cutting-edge
 
 ```mermaid
 flowchart TD
-    User([User / Investor]) <--> UI[Person 1: Web Dashboard & Chat UI]
-    UI <--> API[Person 2: FastAPI Backend & Data Store]
+    User([User / Investor]) <--> UI["Aryan (Person 1: Web Dashboard & Chat UI)"]
+    UI <--> API["Anshuman (Person 2: FastAPI Backend & SQLite)"]
     
     subgraph AI Core Pipeline
-        API --> Orchestrator[Pipeline Orchestrator]
+        API --> Orchestrator["Pipeline Orchestrator (services/orchestrator.py)"]
         
-        subgraph Syllabus Module [Person 4: Expert System & Fuzzy Logic]
-            KB[(Financial Knowledge Base)] --> RuleEngine[Rule-Based Inference Engine]
-            FuzzyEngine[Fuzzy Risk Tolerance Evaluator] --> RuleEngine
-            RuleEngine --> FinancialAudit[Deterministic Plan & Constraints]
+        subgraph Syllabus Module ["Aman (Person 4: Expert System & Fuzzy Logic)"]
+            KB[("Financial Knowledge Base")] --> RuleEngine["Rule-Based Forward-Chaining Engine"]
+            FuzzyEngine["Mamdani Fuzzy Risk Evaluator"] --> RuleEngine
+            RuleEngine --> FinancialAudit["Deterministic Plan & Audit Traces"]
         end
         
-        subgraph Modern AI Module [Person 3: Agent & Web Search]
-            SearchTool[Web Search & Market Data Tool] --> AgentLoop[Intelligent Agent / LLM]
+        subgraph Modern AI Module ["Zaid (Person 3: PydanticAI & Web Search)"]
+            SearchTool["DuckDuckGo Real-Time Search"] --> AgentLoop["PydanticAI Agent"]
             AgentLoop <--> SearchTool
         end
         
         Orchestrator --> FuzzyEngine
         FinancialAudit --> AgentLoop
-        AgentLoop --> Synthesis[Final Advisory Report with Citations & Visual Plan]
+        AgentLoop --> Synthesis["Advisory Report with Web Citations"]
     end
     
     Synthesis --> API
@@ -70,6 +70,18 @@ flowchart TD
 
 ---
 
-## 🚀 Setup & Execution (Once Development Starts)
+## 🚀 Setup & Execution
 
-*Note: Code implementation begins after team review and approval of the documentation.*
+### 1. Run the Live Backend Server (Step 3: Anshuman)
+```bash
+uvicorn backend.main:app --reload --port 8000
+```
+- **Interactive Swagger API Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **Health Diagnostics**: [http://localhost:8000/api/v1/health](http://localhost:8000/api/v1/health)
+
+### 2. Run Verification Test Suites
+- **Backend & Integration**: `python test_backend_standalone.py` (8/8 tests pass)
+- **AI Core (Fuzzy & Rules)**: `python test_expert_standalone.py` (3/3 personas pass)
+- **Multi-Profile Validation**: `python test_dataset_validation.py` (8/8 profiles pass)
+- **PydanticAI Agent**: `python test_agent_standalone.py` (14/16 tests pass)
+

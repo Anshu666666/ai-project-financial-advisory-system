@@ -56,28 +56,86 @@ Many AI student projects attempt financial advisory simply by passing user promp
 
 ---
 
-## 3. System Architecture Diagram
+## 3. System Architecture & Component Diagrams
+
+### 3.1 Component Architecture & Data Flow Diagram
+
+```mermaid
+flowchart TD
+    User([Investor / User]) <--> UI["🎨 Aryan (Frontend UI)<br/>• Onboarding Wizard<br/>• Asset Allocation Doughnut (Chart.js)<br/>• Fired Rules Accordion<br/>• Live Chat Box"]
+    
+    UI <--> API["⚙️ Anshuman (FastAPI Backend)<br/>• POST /api/v1/advisory/evaluate<br/>• POST /api/v1/advisory/chat<br/>• GET /api/v1/advisory/history/{id}<br/>• Pydantic Schemas & CORS"]
+
+    subgraph Backend Core ["Backend Services & Persistence (Anshuman)"]
+        API <--> DB[("💾 SQLite Database<br/>• financial_sessions<br/>• chat_messages")]
+        API --> Orchestrator["Pipeline Orchestrator<br/>(backend/services/orchestrator.py)"]
+    end
+
+    subgraph Academic AI Core ["Classical AI & Knowledge Base (Aman)"]
+        Fuzzy["Fuzzy Logic Engine<br/>• Triangular & Trapezoidal MFs<br/>• 22 Mamdani Inference Rules<br/>• Centroid Defuzzification (0-100)"]
+        KB[("Domain Knowledge Base<br/>• DTI Calculation & Health<br/>• 6-Month Emergency Buffer<br/>• 50/30/20 Budgeting Rules<br/>• Goal Compounding SIP")]
+        Inference["Forward Chaining Engine<br/>• Working Memory Pattern Matching<br/>• Priority Conflict Resolution<br/>• Explanation Audit Facility"]
+        
+        KB --> Inference
+        Fuzzy --> Inference
+    end
+
+    subgraph Modern AI Layer ["Intelligent Agent & Web Intelligence (Zaid)"]
+        Agent["PydanticAI Agent<br/>• Utility-Based PEAS Model<br/>• Prompt Grounding (Anti-Hallucination)<br/>• OpenRouter LLM Gateway"]
+        Search["Live Web Search Tool<br/>• DuckDuckGo Search (ddgs)<br/>• Real RBI Repo Rates & Inflation<br/>• Structured Citation Generation"]
+        
+        Agent <--> Search
+    end
+
+    Orchestrator --> Fuzzy
+    Orchestrator --> Inference
+    Inference -->|Deterministic Plan & Rule Trace| Agent
+    Agent <-->|LLM Inference Call| OpenRouter["🌐 OpenRouter API<br/>(Gemini / DeepSeek / Llama 3.3)"]
+    Agent -->|Cited Advisory Report| Orchestrator
+    Orchestrator --> DB
+```
+
+---
+
+### 3.2 End-to-End Sequence Diagram
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor User
-    participant UI as Person 1: Frontend UI
-    participant Backend as Person 2: FastAPI Backend
-    participant Expert as Person 4: Expert & Fuzzy Engine
-    participant Agent as Person 3: Agent & Web Search
-    participant Web as Live Web Search / Market Data
+    participant UI as Aryan: Frontend UI
+    participant Backend as Anshuman: FastAPI & SQLite
+    participant Aman as Aman: Fuzzy & Expert System
+    participant Zaid as Zaid: PydanticAI Agent
+    participant DDG as DuckDuckGo Live Search
+    participant LLM as OpenRouter API
 
-    User->>UI: Fills Onboarding Form & Financial Goals
+    Note over User, LLM: Phase 1: Full Profile Evaluation Flow
+    User->>UI: Fills Income, Debt, Savings & Risk Horizon
     UI->>Backend: POST /api/v1/advisory/evaluate
-    Backend->>Expert: Evaluate Profile (Fuzzy Inference + Rule Engine)
-    Expert-->>Backend: Crisp Risk Score, Asset Allocation & Rule Violations
-    Backend->>Agent: Generate Plan (Profile + Expert Allocations)
-    Agent->>Web: Query Current Market Trends & Benchmark Rates
-    Web-->>Agent: Live News & Financial Indicators
-    Agent-->>Backend: Grounded Advisory Report with Citations
-    Backend-->>UI: Full Package (Report, Allocation JSON, Rule Trace)
-    UI-->>User: Displays Interactive Charts, Rule Trace & Chat Interface
+    Backend->>Aman: Evaluate Profile (Fuzzy FIS + Expert Rules)
+    Aman-->>Backend: Crisp Score (68.5), 100% Asset Allocation, Fired Rule Traces
+    Backend->>Zaid: Generate Grounded Report (Profile + Expert Allocation)
+    Zaid->>DDG: Query Live Macro Context (RBI Repo Rate, Inflation)
+    DDG-->>Zaid: Real Search URLs & Factual Snippets
+    Zaid->>LLM: Synthesize Advice (Prompt Grounded in Aman's Math)
+    LLM-->>Zaid: Formatted Markdown Advisory Report
+    Zaid-->>Backend: Advisory Payload with Web Citations
+    Backend->>Backend: Persist to SQLite (session_id)
+    Backend-->>UI: Full Evaluation JSON (Allocation, Rules, Citations, Report)
+    UI-->>User: Renders Doughnut Charts, Budget Bars & Rule Badges
+
+    Note over User, LLM: Phase 2: Grounded Conversational Q&A Flow
+    User->>UI: "Should I invest in crypto or pay off my 11.5% debt first?"
+    UI->>Backend: POST /api/v1/advisory/chat (session_id, message)
+    Backend->>Backend: Fetch Session Memory & Triggered Rules from SQLite
+    Backend->>Zaid: Handle User Chat (Session History + Active Rules)
+    Zaid->>LLM: Formulate Response Grounded in RULE_HIGH_INTEREST_DEBT
+    LLM-->>Zaid: Grounded Reply
+    Zaid-->>Backend: Chat Reply with Referenced Rule IDs
+    Backend->>Backend: Save User & Assistant Messages to SQLite
+    Backend-->>UI: ChatResponse JSON
+    UI-->>User: Displays Chat Bubble with Source Tagging
 ```
 
 ---
