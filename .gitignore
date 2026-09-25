@@ -42,3 +42,8 @@ wheels/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Databases & Local persistence
+*.db
+*.sqlite
+*.sqlite3

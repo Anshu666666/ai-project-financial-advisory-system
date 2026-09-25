@@ -1,0 +1,413 @@
+"""
+================================================================================
+FINWISE AI – CENTRAL PIPELINE ORCHESTRATOR
+Author: Anshuman (Core Backend & API Orchestration Lead)
+================================================================================
+Coordinates the unified advisory pipeline:
+User Request -> Aman's Fuzzy Engine & Rule-Based Expert System ->
+Zaid's PydanticAI Agent & Live Web Search -> SQLite Persistence -> Client Response.
+================================================================================
+"""
+
+import logging
+import uuid
+from typing import Any, Dict, List, Optional
+
+from expert_system import FinancialInferenceEngine, UserFinancialProfile
+from expert_system.rules_catalog import RuleStatus
+from fuzzy_logic import FuzzyRiskEvaluator
+
+from agent import generate_advisory_report, handle_user_chat
+from agent.openrouter_client import OpenRouterAPIError, OpenRouterAuthError
+from agent.search_tools import search_tool
+
+import backend.models.database as db
+from backend.schemas import (
+    AgentMarketIntelligence,
+    BudgetRuleCheck,
+    ChatRequest,
+    ChatResponse,
+    EvaluateRequest,
+    EvaluateResponse,
+    ExpertSystemPlan,
+    FuzzyRiskAssessment,
+    ProfileSummary,
+    RecommendedAllocation,
+    RuleFired,
+    WebCitation,
+)
+
+logger = logging.getLogger("finwise.orchestrator")
+
+# Mappings for categorical inputs to numerical scores
+STABILITY_SCORE_MAP = {
+    "unstable": 25.0,
+    "moderate": 55.0,
+    "stable": 85.0,
+}
+
+LOSS_TOLERANCE_SCORE_MAP = {
+    "low": 20.0,
+    "medium": 50.0,
+    "high": 80.0,
+}
+
+
+def _generate_fallback_markdown_report(
+    profile: UserFinancialProfile,
+    fuzzy_res: Any,
+    expert_plan: Any,
+    citations: List[Any],
+) -> str:
+    """
+    Constructs a deterministic, professionally formatted markdown report when
+    OpenRouter API is offline or unconfigured, ensuring 100% system availability.
+    """
+    alloc = expert_plan.asset_allocation
+    dti = expert_plan.debt_analysis
+    ef = expert_plan.emergency_fund
+    budget = expert_plan.budget_breakdown
+    sip = expert_plan.sip_calculation
+    tax = expert_plan.tax_optimization
+
+    triggered_rules = [
+        t for t in expert_plan.rule_execution_trace
+        if getattr(t, "status", None) in (RuleStatus.TRIGGERED, "TRIGGERED")
+    ]
+
+    citations_md = ""
+    if citations:
+        citations_md = "\n### 🌐 Real-Time Market Intelligence (Live Web Citations)\n"
+        for idx, c in enumerate(citations[:3], 1):
+            title = getattr(c, "title", "Market Source")
+            url = getattr(c, "url", "#")
+            source = getattr(c, "source", "Live Search")
+            snippet = getattr(c, "snippet", "")
+            citations_md += f"{idx}. **[{title}]({url})** — *{source}*\n   > {snippet[:180]}...\n\n"
+
+    rules_md = ""
+    if triggered_rules:
+        rules_md = "\n### ⚠️ Critical Rule Traces & Safeguards Triggered\n"
+        for r in triggered_rules:
+            rules_md += f"- **[{r.rule_id}] {r.rule_name}**: {r.explanation}\n"
+
+    report = f"""# 📈 Certified Financial Advisory Report for {profile.user_id}
+
+### 1. Executive Summary & Risk Profile
+- **Evaluated Investor Age**: {profile.age} years | **Time Horizon**: {profile.investment_horizon_years} years
+- **Fuzzy Risk Classification**: **{fuzzy_res.risk_category}** (Calculated Score: **{fuzzy_res.crisp_risk_score:.1f}/100**)
+- **Fuzzy Rationale**: {fuzzy_res.rationale}
+
+---
+
+### 2. Recommended Asset Allocation
+Based on forward-chaining asset allocation rules and your {fuzzy_res.risk_category.lower()} profile, your investable capital is distributed as follows:
+- 📊 **Equity & Growth Funds**: **{alloc['equity_percentage']}%**
+- 🛡️ **Debt & Fixed Income Instruments**: **{alloc['debt_percentage']}%**
+- 🥇 **Gold & Macro-Hedge Assets**: **{alloc['gold_percentage']}%**
+- 💧 **Liquid Cash Buffer**: **{alloc['cash_percentage']}%**
+*(Strict Mathematical Verification: Total Allocation = {alloc['total_percentage']}%)*
+
+---
+
+### 3. Cash Flow & Budget Analysis (50/30/20 Framework)
+- **Monthly Net Income**: ₹{profile.monthly_income:,.0f}
+- **Fixed Monthly Expenses**: ₹{profile.monthly_expenses:,.0f} | **Debt EMIs**: ₹{profile.monthly_emi:,.0f}
+- **Debt-to-Income (DTI)**: **{dti['dti_ratio']:.1f}%** ({dti['dti_status']})
+- **Monthly Investable Surplus**: **₹{budget['investable_surplus']:,.0f}/month**
+- **Emergency Reserve Status**: {ef['status']} (Current: ₹{ef['current_fund']:,.0f} / Target 6-Month: ₹{ef['target_fund']:,.0f})
+  > *Guidance: {ef['recommendation']}*
+
+---
+
+### 4. Goal Planning & Wealth Projection
+- **Target Goal**: {profile.financial_goal} (Target: ₹{profile.goal_target_amount:,.0f})
+- **Required Monthly SIP**: **₹{sip['monthly_sip_required']:,.0f}/month** for {profile.investment_horizon_years} years at an expected 12% CAGR.
+- **Tax Optimization Strategy**: {tax['advice']}
+{rules_md}
+{citations_md}
+---
+*Disclaimer: Generated by FinWise AI Hybrid Advisory System for educational and academic evaluation purposes only.*
+"""
+    return report.strip()
+
+
+async def evaluate_financial_profile(req: EvaluateRequest) -> EvaluateResponse:
+    """
+    Executes the complete financial advisory evaluation pipeline:
+    1. Fuzzy Risk Inference
+    2. Rule-Based Expert System & Domain Math
+    3. Live DuckDuckGo Market Retrieval
+    4. PydanticAI Advisory Report Synthesis (with deterministic fallback)
+    5. Session Persistence in SQLite
+    """
+    session_id = f"sess_{uuid.uuid4().hex[:8]}"
+
+    # Step 1: Map inputs and evaluate risk via Aman's Fuzzy Engine
+    stability_val = STABILITY_SCORE_MAP.get(req.income_stability, 85.0)
+    loss_val = LOSS_TOLERANCE_SCORE_MAP.get(req.loss_tolerance, 50.0)
+
+    fuzzy_evaluator = FuzzyRiskEvaluator()
+    fuzzy_result = fuzzy_evaluator.evaluate(
+        age=float(req.age),
+        income_stability=stability_val,
+        loss_tolerance=loss_val,
+        investment_horizon_years=float(req.investment_horizon_years),
+    )
+
+    # Step 2: Construct Aman's UserFinancialProfile and run Forward-Chaining Engine
+    profile = UserFinancialProfile(
+        user_id=req.user_name,
+        age=req.age,
+        monthly_income=req.monthly_income,
+        monthly_expenses=req.monthly_expenses,
+        monthly_emi=req.monthly_emi,
+        current_liquid_savings=req.current_savings,
+        income_stability_score=stability_val,
+        loss_tolerance_score=loss_val,
+        investment_horizon_years=req.investment_horizon_years,
+        financial_goal=req.primary_goal,
+        goal_target_amount=req.goal_target_amount if req.goal_target_amount > 0 else (req.monthly_income * 12 * 5),
+        tax_regime=req.tax_regime,
+    )
+
+    inference_engine = FinancialInferenceEngine()
+    expert_output = inference_engine.run(
+        profile=profile,
+        crisp_risk_score=fuzzy_result.crisp_risk_score,
+        risk_category=fuzzy_result.risk_category,
+    )
+
+    # Step 3: Fetch real-time market search intelligence
+    try:
+        market_benchmarks = search_tool.get_market_benchmarks()
+        live_citations = market_benchmarks.get("citations", [])
+    except Exception as e:
+        logger.warning(f"Live web search failed: {e}")
+        live_citations = []
+        market_benchmarks = {
+            "market_summary": "Macroeconomic context unavailable due to temporary search timeout.",
+            "citations": [],
+        }
+
+    # Step 4: Synthesize Report via Zaid's PydanticAI Agent
+    try:
+        agent_res = generate_advisory_report(
+            profile=profile,
+            expert_evaluation=expert_output,
+            fuzzy_result=fuzzy_result,
+        )
+        report_text = agent_res.get("markdown_report", "")
+        agent_citations = agent_res.get("web_citations", live_citations)
+        agent_summary = agent_res.get("market_summary", market_benchmarks.get("market_summary", ""))
+    except OpenRouterAuthError:
+        logger.info("OpenRouter key not configured. Presenting certified Expert System plan.")
+        report_text = _generate_fallback_markdown_report(profile, fuzzy_result, expert_output, live_citations)
+        agent_citations = live_citations
+        agent_summary = market_benchmarks.get("market_summary", "Live search context integrated.")
+    except Exception as e:
+        logger.error(f"Agent report generation encountered error: {e}. Fallback to deterministic plan.")
+        report_text = _generate_fallback_markdown_report(profile, fuzzy_result, expert_output, live_citations)
+        agent_citations = live_citations
+        agent_summary = market_benchmarks.get("market_summary", "Market benchmarks retrieved.")
+
+    # Step 5: Save session to SQLite Database
+    db.save_session(
+        session_id=session_id,
+        user_name=req.user_name,
+        profile={
+            "user_name": req.user_name,
+            "age": req.age,
+            "monthly_income": req.monthly_income,
+            "monthly_expenses": req.monthly_expenses,
+            "monthly_emi": req.monthly_emi,
+            "current_savings": req.current_savings,
+            "total_debt": req.total_debt,
+            "investment_horizon_years": req.investment_horizon_years,
+            "loss_tolerance": req.loss_tolerance,
+            "income_stability": req.income_stability,
+            "primary_goal": req.primary_goal,
+            "tax_regime": req.tax_regime,
+        },
+        fuzzy_res=fuzzy_result.to_dict(),
+        expert_plan=expert_output.to_dict(),
+        advisory_report=report_text,
+    )
+
+    # Step 6: Construct structured response matching API Contracts
+    total_obligations = req.monthly_expenses + req.monthly_emi
+    net_savings = max(0.0, req.monthly_income - total_obligations)
+    months_covered = (
+        round(req.current_savings / req.monthly_expenses, 2)
+        if req.monthly_expenses > 0
+        else 99.0
+    )
+
+    profile_summary = ProfileSummary(
+        user_name=req.user_name,
+        age=req.age,
+        monthly_income=req.monthly_income,
+        monthly_expenses=req.monthly_expenses,
+        monthly_emi=req.monthly_emi,
+        net_monthly_savings=round(net_savings, 2),
+        emergency_fund_months_covered=months_covered,
+        dti_ratio=expert_output.debt_analysis.get("dti_ratio", 0.0),
+    )
+
+    # Actionable rules fired
+    rules_fired_list = []
+    for t in expert_output.rule_execution_trace:
+        if getattr(t, "status", None) in (RuleStatus.TRIGGERED, "TRIGGERED"):
+            severity = "HIGH" if "Debt" in t.rule_name or "Emergency" in t.rule_name else "INFO"
+            rules_fired_list.append(
+                RuleFired(
+                    rule_id=t.rule_id,
+                    title=t.rule_name,
+                    severity=severity,
+                    explanation=t.explanation,
+                )
+            )
+
+    budget_check = BudgetRuleCheck(
+        needs_ratio=round((req.monthly_expenses / req.monthly_income) * 100.0, 1),
+        wants_ratio=0.0,
+        savings_ratio=round((net_savings / req.monthly_income) * 100.0, 1),
+        investable_surplus=expert_output.budget_breakdown.get("investable_surplus", net_savings),
+        status="Healthy" if (req.monthly_expenses / req.monthly_income) <= 0.50 else "High Needs Ratio",
+    )
+
+    expert_plan_resp = ExpertSystemPlan(
+        recommended_allocation=RecommendedAllocation(
+            equity_percentage=expert_output.asset_allocation["equity_percentage"],
+            debt_bonds_percentage=expert_output.asset_allocation["debt_percentage"],
+            gold_commodities_percentage=expert_output.asset_allocation["gold_percentage"],
+            liquid_cash_percentage=expert_output.asset_allocation["cash_percentage"],
+            total_percentage=expert_output.asset_allocation["total_percentage"],
+        ),
+        budget_rule_check=budget_check,
+        actionable_rules_fired=rules_fired_list,
+        dti_status=expert_output.debt_analysis.get("dti_status", "Healthy"),
+        emergency_fund_status=expert_output.emergency_fund.get("status", "Adequate"),
+        monthly_sip_required=expert_output.sip_calculation.get("monthly_sip_required", 0.0),
+        tax_advice=expert_output.tax_optimization.get("advice", ""),
+    )
+
+    citations_models = []
+    for c in agent_citations:
+        if isinstance(c, dict):
+            citations_models.append(
+                WebCitation(
+                    title=c.get("title", "Market Source"),
+                    source=c.get("source", "Live Web"),
+                    url=c.get("url", "#"),
+                    snippet=c.get("snippet", ""),
+                )
+            )
+        else:
+            citations_models.append(
+                WebCitation(
+                    title=getattr(c, "title", "Market Source"),
+                    source=getattr(c, "source", "Live Web"),
+                    url=getattr(c, "url", "#"),
+                    snippet=getattr(c, "snippet", ""),
+                )
+            )
+
+    return EvaluateResponse(
+        status="success",
+        session_id=session_id,
+        profile_summary=profile_summary,
+        fuzzy_risk_assessment=FuzzyRiskAssessment(
+            crisp_score=round(fuzzy_result.crisp_risk_score, 1),
+            category=fuzzy_result.risk_category,
+            fuzzy_memberships={
+                k: round(v, 2)
+                for k, v in fuzzy_result.rule_firing_strengths.items()
+            },
+            reasoning=fuzzy_result.rationale,
+        ),
+        expert_system_plan=expert_plan_resp,
+        agent_market_intelligence=AgentMarketIntelligence(
+            market_summary=agent_summary,
+            web_citations=citations_models,
+        ),
+        comprehensive_advisory_report=report_text,
+    )
+
+
+async def chat_with_advisor(req: ChatRequest) -> ChatResponse:
+    """
+    Executes conversational follow-up grounded in the active session's financial plan.
+    """
+    session = db.get_session(req.session_id)
+    if not session:
+        raise ValueError(f"Session '{req.session_id}' not found. Please evaluate your profile first.")
+
+    chat_history_db = db.get_chat_history(req.session_id)
+    history_for_agent = [
+        {"role": msg["role"], "content": msg["message"]}
+        for msg in chat_history_db
+    ]
+
+    try:
+        agent_reply = handle_user_chat(
+            session_history=history_for_agent,
+            new_message=req.message,
+            expert_evaluation=session["expert_plan"],
+            profile=session["profile"],
+            fuzzy_result=session["fuzzy_assessment"],
+        )
+        reply_text = agent_reply.get("reply", "")
+        rules_referenced = agent_reply.get("grounded_rules_referenced", [])
+        sources = agent_reply.get("sources_used", [])
+    except OpenRouterAuthError:
+        # Fallback to expert-grounded deterministic answer
+        expert = session["expert_plan"]
+        alloc = expert.get("asset_allocation", {})
+        reply_text = (
+            f"Based on your certified financial plan ({session['fuzzy_assessment'].get('category')} risk profile), "
+            f"your priority asset allocation is **{alloc.get('equity_percentage')}% Equity** and **{alloc.get('debt_percentage')}% Debt**. "
+            f"Regarding your query: *'{req.message}'*, always preserve your 6-month emergency reserve before increasing risk exposure."
+        )
+        rules_referenced = [
+            r["rule_id"] for r in expert.get("rule_execution_trace", [])
+            if r.get("status") in (RuleStatus.TRIGGERED, "TRIGGERED")
+        ]
+        sources = []
+    except Exception as e:
+        logger.error(f"Chat error: {e}")
+        reply_text = f"Based on your active plan, maintain your allocated investment schedule and debt controls. (Detail: {e})"
+        rules_referenced = []
+        sources = []
+
+    # Save to SQLite Database
+    db.add_chat_message(
+        session_id=req.session_id,
+        role="user",
+        message=req.message,
+    )
+    db.add_chat_message(
+        session_id=req.session_id,
+        role="assistant",
+        message=reply_text,
+        rules=rules_referenced,
+        citations=[s if isinstance(s, dict) else s.model_dump() for s in sources],
+    )
+
+    sources_models = [
+        WebCitation(
+            title=s.get("title", "Market Reference") if isinstance(s, dict) else getattr(s, "title", "Market Reference"),
+            source=s.get("source", "Live Search") if isinstance(s, dict) else getattr(s, "source", "Live Search"),
+            url=s.get("url", "#") if isinstance(s, dict) else getattr(s, "url", "#"),
+            snippet=s.get("snippet", "") if isinstance(s, dict) else getattr(s, "snippet", ""),
+        )
+        for s in sources
+    ]
+
+    return ChatResponse(
+        status="success",
+        session_id=req.session_id,
+        reply=reply_text,
+        grounded_rules_referenced=rules_referenced,
+        sources_used=sources_models,
+    )
