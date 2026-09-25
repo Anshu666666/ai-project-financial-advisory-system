@@ -10,24 +10,37 @@ To ensure that all 4 team members can work **concurrently without blocking one a
 ┌────────────────────────────────────────────────────────────────────────┐
 │                          FINWISE AI SYSTEM                             │
 ├──────────────────┬──────────────────┬──────────────────┬───────────────┤
-│  PERSON 1 (UI)   │ PERSON 2 (BACK)  │ PERSON 3 (AGENT) │ PERSON 4 (ES) │
-│  Frontend & UX   │ API Orchestrator │ LLM & Web Search │ Expert & Fuzzy│
+│  ARYAN           │ ANSHUMAN         │ ZAID             │ AMAN          │
+│  (Person 1: UI)  │ (Person 2: Back) │ (Person 3: Agent)│ (Person 4: ES)│
 ├──────────────────┼──────────────────┼──────────────────┼───────────────┤
-│ • Onboarding UI  │ • FastAPI Server │ • Agent Loop     │ • Rule Engine │
-│ • Allocation Pie │ • Session State  │ • Search Provider│ • Knowledge   │
-│ • Chat Assistant │ • DB & History   │ • Prompt System  │   Base Rules  │
-│ • Rule Trace View│ • API Endpoints  │ • Live Retrieval │ • Fuzzy Logic │
-│ • Plan Export    │ • Mock Provider  │ • LLM Grounding  │ • Heuristic   │
-│                  │                  │                  │   Goal Search │
+│ • UI/UX Research │ • Base Scaffolding│ • OpenRouter API │ • Rule Engine │
+│ • Theme & Palettes│ • FastAPI Server │ • Search Provider│ • Knowledge   │
+│ • Component Libs │ • Session State  │ • PydanticAI /   │   Base Rules  │
+│ • Onboarding UI  │ • DB & History   │   Agent Loop     │ • Fuzzy Logic │
+│ • Allocation Pie │ • API Endpoints  │ • Live Retrieval │ • Heuristic   │
+│ • Chat Assistant │ • Mock Provider  │ • Prompt Grounding│  Goal Search │
 └──────────────────┴──────────────────┴──────────────────┴───────────────┘
 ```
 
 ---
 
-## 👤 Person 1: Frontend & UI/UX Specialist
+## 👤 Aryan (Person 1): Frontend & UI/UX Specialist
 
 ### Role Summary
-Owns the entire client-facing web application, ensuring a responsive, visual, and intuitive financial dashboard with modern aesthetics.
+Owns the entire client-facing web application, ensuring a modern, responsive, and intuitive financial advisory experience.
+
+### ⚠️ Mandatory Phase 0: UI/UX Research & Mock Themes (Before Writing Code)
+Before writing frontend code, Aryan must complete these steps:
+1. **Research Modern Agent UI Patterns**:
+   - Study conversational agent interfaces: streaming chat bubbles, expandable reasoning/rule-trace accordions, clickable citation pills/badges, and interactive disclaimer banners.
+   - Explore modern component libraries & design systems (e.g., 21st.dev, Magic UI, Aceternity UI, shadcn agent patterns).
+2. **Select Design Tokens & Themes**:
+   - Curate a distinct color palette: Modern Fintech Dark Mode (e.g., Deep Slate `#0B0F19`, Emerald Green Accent `#10B981`, Indigo Accent `#6366F1`) or clean Light Mode.
+   - Select modern typography from Google Fonts (*Outfit*, *Plus Jakarta Sans*, or *Inter*).
+   - Mock/wireframe the 3 core views before coding:
+     1. Financial Onboarding Form (Multi-step wizard).
+     2. Interactive Dashboard (Asset allocation doughnut chart, 50/30/20 budget bars, fired expert rules card).
+     3. Financial Advisory Chat Assistant (with rule grounding citations).
 
 ### Assigned Files / Modules
 - `frontend/`
@@ -38,49 +51,49 @@ Owns the entire client-facing web application, ensuring a responsive, visual, an
   - `js/chat.js` (Streaming or asynchronous financial chat UI with citation bubbles)
   - `js/onboarding.js` (Multi-step form for income, expenses, debts, goals, risk tolerance)
 
-### Independent Working Mode (How to work before backend is ready)
-- Uses the [API Contracts](file:///c:/Users/anshu/OneDrive/Desktop/ai-project-financial-advisory-system/docs/API_CONTRACTS.md) with local mock JSON files or a mock API flag in `api.js`.
-- Can design and completely polish the dashboard, charts, forms, and chat bubbles without waiting for backend or AI code.
+### Work Execution (Non-Cyclical Flow)
+- **Phase 1 (While backend is built)**: Completes UI/UX research, curates design tokens/themes, and builds the visual HTML/CSS component structures (forms, chart containers, chat window, rule accordion).
+- **Phase 2 (Once Anshuman hands off the live backend)**: Connects `api.js` directly to the live backend. No throwaway mock adapters needed.
+- **Done Once**: Once connected and styled, Aryan's work is complete. No circling back.
 
 ### Milestones & Deliverables
-1. **Milestone 1**: Build the multi-step financial onboarding questionnaire (inputs for income, savings, debt, time horizon, risk questions).
-2. **Milestone 2**: Build the Financial Dashboard displaying:
-   - Interactive Asset Allocation Doughnut Chart (Equity, Debt, Cash, Gold).
-   - 50/30/20 Budget Breakdown Bar Chart.
-   - Expert System Explanation Card (showing list of rules that fired).
-3. **Milestone 3**: Build the conversational chat box supporting markdown responses and clickable source citations.
-4. **Milestone 4**: Export to PDF / Print summary button for the user's financial plan.
+1. **Milestone 1**: UI/UX research, component curation (21st.dev/Magic UI patterns), and design theme selection.
+2. **Milestone 2**: HTML5/CSS layout for Onboarding Questionnaire and Dashboard cards.
+3. **Milestone 3**: Connect directly to Anshuman's live FastAPI endpoints (charts, rule display, and chat).
+4. **Milestone 4**: Final visual polish, responsive testing, and PDF/Print plan export.
 
 ---
 
-## 👤 Person 2: Core Backend & API Orchestrator Lead
+## 👤 Anshuman (Person 2): Core Backend & API Orchestrator Lead
 
 ### Role Summary
-Builds the server infrastructure, coordinates requests between the Frontend, the Expert System (Person 4), and the LLM Agent (Person 3), and manages data persistence.
+Builds the server infrastructure, coordinates requests between the Frontend (Aryan), the Expert System (Aman), and the LLM Agent (Zaid), and manages data persistence.
 
 ### Assigned Files / Modules
 - `backend/`
   - `main.py` (FastAPI app entry point, CORS configuration, health checks)
   - `routers/advisory.py` (Endpoint for `/evaluate`, `/chat`, `/history`)
-  - `services/orchestrator.py` (Coordinates Person 4's engine and Person 3's agent)
-  - `models/database.py` (SQLite setup via SQLAlchemy or simple JSON store)
+  - `services/orchestrator.py` (Directly wires Aman's engine and Zaid's agent)
+  - `models/database.py` (SQLite setup via SQLAlchemy for sessions and chat history)
   - `schemas.py` (Pydantic request/response models matching API Contracts)
   - `requirements.txt` (Server dependencies: fastapi, uvicorn, pydantic, etc.)
 
-### Independent Working Mode
-- Starts by writing the Pydantic schemas in `schemas.py` from the contract.
-- Provides mock stub responses for `/api/v1/advisory/evaluate` and `/api/v1/advisory/chat` so Person 1 can connect immediately.
-- Once Person 3 and Person 4 finish their Python modules, Person 2 imports and connects them in `services/orchestrator.py`.
+### Work Execution (Non-Cyclical Flow)
+- **Zero Mock Waste**: Anshuman does not write throwaway mock stubs.
+- **Input**: Receives completed, verified Python functions from Aman (`evaluate_financial_profile`) and Zaid (`generate_advisory_report`).
+- **Direct Build**: Implements the Pydantic schemas, SQLite session models, and connects Aman's logic + Zaid's agent directly into `services/orchestrator.py`.
+- **Hand-off**: Launches the live FastAPI server and delivers the verified REST API to Aryan.
+- **Done Once**: Once the live API passes Swagger tests (`/docs`), backend is complete. No circling back.
 
 ### Milestones & Deliverables
-1. **Milestone 1**: Set up FastAPI boilerplate, CORS, and Pydantic validation schemas.
-2. **Milestone 2**: Implement mock endpoints and SQLite storage for session profiles and chat history.
-3. **Milestone 3**: Integrate Person 4's `ExpertSystem` & `FuzzyEngine` into the evaluation pipeline.
-4. **Milestone 4**: Integrate Person 3's `FinancialAgent` into the synthesis & chat pipeline with error handling.
+1. **Milestone 1**: Set up project environment, `requirements.txt`, and Pydantic validation schemas.
+2. **Milestone 2**: Build SQLite database models for storing user profiles, advice history, and chat sessions.
+3. **Milestone 3**: Wire Aman's finished engine and Zaid's finished agent inside `services/orchestrator.py`.
+4. **Milestone 4**: Verify all endpoints via FastAPI Swagger UI (`http://localhost:8000/docs`) and deliver live API to Aryan.
 
 ---
 
-## 👤 Person 3: LLM & Web Search Intelligent Agent
+## 👤 Zaid (Person 3): LLM & Web Search Intelligent Agent
 
 ### Role Summary
 Builds the Intelligent Agent module (Perception-Reasoning-Action), integrating LLM API calls with real-time web search for financial news and market benchmarks.
@@ -93,20 +106,22 @@ Builds the Intelligent Agent module (Perception-Reasoning-Action), integrating L
   - `openrouter_client.py` (OpenRouter API client supporting models like Llama 3.3, DeepSeek, Claude, Gemini)
   - `test_agent_standalone.py` (Local CLI test script to verify agent search + prompt)
 
-### Independent Working Mode
-- Works entirely inside `backend/agent/`.
-- Can test the LLM and search capabilities from `test_agent_standalone.py` using dummy financial profiles.
-- Does not need the frontend or database running to develop and optimize prompts.
+### Work Execution (Non-Cyclical Flow)
+- **Input**: Takes Aman's completed expert rule output structure.
+- **Direct Build**: Builds the OpenRouter client, DuckDuckGo search tool, and PydanticAI agent loop. Grounds the prompts so the LLM strictly explains Aman's real numbers with web citations.
+- **Verification**: Tests the agent completely in `test_agent_standalone.py`.
+- **Hand-off**: Hands the completed, tested `generate_advisory_report` and `handle_user_chat` functions to Anshuman.
+- **Done Once**: Frozen and handed off. Zaid never touches or circles back to this code.
 
 ### Milestones & Deliverables
-1. **Milestone 1**: Set up `openrouter_client.py` using OpenRouter's OpenAI-compatible endpoint (`https://openrouter.ai/api/v1`) with configurable model selection.
+1. **Milestone 1**: Set up `openrouter_client.py` using OpenRouter's OpenAI-compatible endpoint (`https://openrouter.ai/api/v1`).
 2. **Milestone 2**: Build `search_tools.py` using `duckduckgo-search` to fetch live inflation, interest rates, and market index trends.
-3. **Milestone 3**: Implement the agent using a modern non-LangChain framework (e.g. **PydanticAI** or **Smolagents**) that consumes Person 4's expert system allocation numbers.
-4. **Milestone 4**: Implement the conversational follow-up handler for interactive user questions with source citations.
+3. **Milestone 3**: Implement the PydanticAI agent loop that ingests Aman's expert system allocation numbers and returns formatted reports with citations.
+4. **Milestone 4**: Implement follow-up chat handler, run `test_agent_standalone.py`, and hand off finished module to Anshuman.
 
 ---
 
-## 👤 Person 4: AI Expert System & Fuzzy Risk Engine (Syllabus Core)
+## 👤 Aman (Person 4): AI Expert System & Fuzzy Risk Engine (Syllabus Core)
 
 ### Role Summary
 Builds the academic core of the project: the rule-based forward-chaining expert system, financial knowledge base, explanation facility, and fuzzy logic risk assessor.
@@ -122,60 +137,61 @@ Builds the academic core of the project: the rule-based forward-chaining expert 
   - `risk_evaluator.py` (Mamdani fuzzy inference engine mapping inputs $\rightarrow$ crisp risk score)
   - `test_expert_standalone.py` (Local CLI test script to verify rules and fuzzy scoring)
 
-### Independent Working Mode
-- Pure Python logic with zero external web or UI dependencies.
-- Can run and test all mathematical rules and fuzzy functions from `test_expert_standalone.py`.
-- Ships clean, deterministic Python functions with typed signatures ready for Person 2 to plug into the orchestrator.
+### Work Execution (Non-Cyclical Flow)
+- **Zero Dependencies**: Aman has zero dependencies on any teammate. Starts Day 1.
+- **Direct Build**: Writes pure mathematical and rule-based Python logic for fuzzy risk assessment and forward chaining.
+- **Verification**: Tests all calculations, rule firings, and explanations in `test_expert_standalone.py`.
+- **Hand-off**: Hands the completed, tested `evaluate_financial_profile` function to Zaid and Anshuman.
+- **Done Once**: Frozen and handed off. Aman never touches or circles back to this code.
 
 ### Milestones & Deliverables
 1. **Milestone 1**: Implement fuzzy membership functions and the Mamdani risk evaluation system in `fuzzy_logic/`.
-2. **Milestone 2**: Implement the Knowledge Base (`rules.py`) with at least 8–10 sound financial axioms.
+2. **Milestone 2**: Implement the Knowledge Base (`rules.py`) with 8–10 financial production rules.
 3. **Milestone 3**: Build the Forward-Chaining Inference Engine (`engine.py`) and Explanation Facility (`explanation.py`).
-4. **Milestone 4**: Implement the heuristic budget goal search and write comprehensive unit tests.
+4. **Milestone 4**: Validate via `test_expert_standalone.py` and hand off finished module to Zaid and Anshuman.
 
 ---
 
-## 🗓️ 4-Phase Project Execution Roadmap
+## ⚡ Strictly Non-Cyclical (Linear Assembly Line) Roadmap
 
-```mermaid
-gantt
-    title FinWise AI Team Roadmap
-    dateFormat  YYYY-MM-DD
-    section Person 1 (UI)
-    Form & Inputs UI           :p1_1, 2026-09-19, 3d
-    Charts & Dashboard         :p1_2, after p1_1, 3d
-    Chat UI & Integration      :p1_3, after p1_2, 3d
-    section Person 2 (Backend)
-    FastAPI & Mock Stubs       :p2_1, 2026-09-19, 2d
-    DB & Session Storage       :p2_2, after p2_1, 3d
-    Orchestration Pipeline     :p2_3, after p2_2, 4d
-    section Person 3 (Agent)
-    Search Tools Integration   :p3_1, 2026-09-19, 3d
-    LLM Prompts & Grounding    :p3_2, after p3_1, 3d
-    Agent Synthesis & Citations:p3_3, after p3_2, 3d
-    section Person 4 (AI Core)
-    Fuzzy Risk Evaluator       :p4_1, 2026-09-19, 3d
-    Rule-Based Expert Engine   :p4_2, after p4_1, 3d
-    Explanation Facility & Heur:p4_3, after p4_2, 3d
+This model eliminates all circular dependencies. **Each person finishes their work once, tests it, and hands it downstream.**
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       STRICT NON-CYCLICAL PIPELINE                          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  [STEP 1] Aman (Starts Day 1, Zero Dependencies)                            │
+│           Writes Fuzzy Logic + Expert System Rule Engine in Pure Python.    │
+│           Verifies in test_expert_standalone.py.                            │
+│           ★ COMPLETED & FROZEN -> Hands off to Zaid & Anshuman              │
+│                                │                                            │
+│                                ▼                                            │
+│  [STEP 2] Zaid (Builds directly on Aman's real output)                      │
+│           Builds OpenRouter client + DuckDuckGo search + PydanticAI agent.  │
+│           Verifies in test_agent_standalone.py.                             │
+│           ★ COMPLETED & FROZEN -> Hands off to Anshuman                     │
+│                                │                                            │
+│                                ▼                                            │
+│  [STEP 3] Anshuman (Wires Aman's + Zaid's finished modules)                 │
+│           Writes FastAPI endpoints, SQLite session store & Orchestrator.    │
+│           Verifies live via Swagger docs (http://localhost:8000/docs).      │
+│           ★ COMPLETED & FROZEN -> Delivers live API to Aryan                │
+│                                │                                            │
+│                                ▼                                            │
+│  [STEP 4] Aryan (Builds UI directly against real, live API)                 │
+│           (Researched UI/UX & built layout cards while Steps 1-3 ran).      │
+│           Connects frontend fetch directly to Anshuman's live backend.      │
+│           ★ COMPLETED -> Entire application works end-to-end!               │
+│                                │                                            │
+│                                ▼                                            │
+│  [STEP 5] All 4 Members (Joint Finalization)                                │
+│           Prepare viva presentation slides using docs/SYLLABUS_MAPPING.md.  │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Phase 1: Contracts & Stubs (Days 1–2)
-- Person 2 commits initial directory layout, `requirements.txt`, and API models.
-- Person 2 spins up mock endpoints.
-- All 4 members pull the repository and verify their local environment.
-
-### Phase 2: Independent Subsystem Development (Days 3–6)
-- Person 1 builds UI using mock JSON.
-- Person 2 sets up database and session management.
-- Person 3 refines search tools and LLM prompt grounding.
-- Person 4 validates all fuzzy rules and expert system logic with unit tests.
-
-### Phase 3: Integration & End-to-End Wiring (Days 7–9)
-- Person 2 connects Person 4 (Expert System) $\rightarrow$ Person 3 (Agent) in `orchestrator.py`.
-- Person 1 connects frontend `fetch()` to real backend endpoints.
-- End-to-end testing with sample investor personas (e.g., student with loans vs. 40-year-old with savings).
-
-### Phase 4: Polish, Viva Prep & Report (Days 10–12)
-- Test edge cases and ensure safety disclaimers.
-- Prepare presentation slides using [Syllabus Mapping](file:///c:/Users/anshu/OneDrive/Desktop/ai-project-financial-advisory-system/docs/SYLLABUS_MAPPING.md).
-- Practice the viva defense questions.
+### Why This Guarantees Zero Circling Back:
+1. **No Throwaway Mocks**: Anshuman doesn't write mock endpoints only to rewrite them later. He writes the real orchestrator directly using Aman's and Zaid's completed modules.
+2. **No Rewiring in Frontend**: Aryan doesn't build a mock frontend only to rewire it later. He designs the visual layouts and then hooks them directly to the real, running backend.
+3. **Pure Forward Progress**: Once Aman finishes Step 1, he is done. Once Zaid finishes Step 2, he is done. Once Anshuman finishes Step 3, he is done. Once Aryan finishes Step 4, the product is done.
