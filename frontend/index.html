@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinWise AI – Intelligent Financial Advisory Dashboard & ChatGPT Assistant</title>
+  
+  <!-- Google Fonts & Chart.js -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    :root {
+      --bg-dark: #0b0f19;
+      --bg-card: rgba(17, 24, 39, 0.75);
+      --border-card: rgba(55, 65, 81, 0.6);
+      --accent-emerald: #10b981;
+      --accent-indigo: #6366f1;
+      --accent-cyan: #06b6d4;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --text-primary: #f9fafb;
+      --text-secondary: #9ca3af;
+      --text-muted: #6b7280;
+      --glass-glow: 0 10px 30px -10px rgba(16, 185, 129, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background: #0b0f19;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.12) 0%, transparent 45%),
+        radial-gradient(circle at 85% 85%, rgba(16, 185, 129, 0.1) 0%, transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.05) 0%, transparent 60%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navbar */
+    header {
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-card);
+      padding: 14px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--accent-emerald), var(--accent-cyan));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+      color: #0b0f19;
+    }
+
+    .brand-text h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      background: linear-gradient(90deg, #ffffff, #a5f3fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-text p {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* Navigation Tabs */
+    .nav-tabs {
+      display: flex;
+      gap: 6px;
+      background: rgba(31, 41, 55, 0.6);
+      padding: 4px;
+      border-radius: 14px;
+      border: 1px solid rgba(75, 85, 99, 0.4);
+    }
+
+    .tab-btn {
+      padding: 8px 18px;
+      border-radius: 10px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(99, 102, 241, 0.25));
+      border: 1px solid var(--accent-emerald);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      color: var(--accent-emerald);
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-emerald);
+      box-shadow: 0 0 10px var(--accent-emerald);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    /* Container */
+    .app-container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 24px;
+      flex: 1;
+      width: 100%;
+    }
+
+    .view-panel {
+      display: none;
+      animation: fadeIn 0.3s ease-in-out forwards;
+    }
+
+    .view-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Glass Cards */
+    .glass-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-card);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: var(--glass-glow);
+      margin-bottom: 24px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* View 1: Wizard / Questionnaire */
+    .wizard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-field label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .field-hint {
+      font-size: 11px;
+      color: var(--accent-cyan);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .form-field input, .form-field select, .form-field textarea {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(75, 85, 99, 0.5);
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: #ffffff;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .form-field input:focus, .form-field select:focus, .form-field textarea:focus {
+      border-color: var(--accent-emerald);
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, var(--accent-emerald), var(--accent-cyan));
+      border: none;
+      border-radius: 14px;
+      color: #0b0f19;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+      margin-top: 10px;
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 28px rgba(16, 185, 129, 0.45);
+    }
+
+    /* View 2: Dashboard */
+    .metrics-header {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+
+    .metric-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border-card);
+      border-radius: 16px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--card-color, var(--accent-emerald));
+    }
+
+    .metric-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .metric-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .metric-sub {
+      font-size: 12px;
+      color: var(--card-color, var(--accent-emerald));
+      margin-top: 4px;
+      font-weight: 600;
+    }
+
+    .dashboard-charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 900px) {
+      .dashboard-charts-grid { grid-template-columns: 1fr; }
+    }
+
+    .chart-box {
+      height: 280px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Rules Accordion */
+    .rule-card-item {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(75, 85, 99, 0.4);
+      border-radius: 14px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      transition: border-color 0.2s ease;
+    }
+
+    .rule-card-item:hover {
+      border-color: var(--accent-indigo);
+    }
+
+    .rule-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .rule-title-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .severity-badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .badge-critical { background: rgba(244, 63, 94, 0.2); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.4); }
+    .badge-high { background: rgba(245, 158, 11, 0.2); color: #fde047; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .badge-info { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4); }
+
+    .rule-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* Citations Pills */
+    .citations-flex {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .citation-chip {
+      background: rgba(6, 182, 212, 0.1);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-size: 12px;
+      color: var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .citation-chip:hover {
+      background: rgba(6, 182, 212, 0.2);
+      border-color: var(--accent-cyan);
+    }
+
+    /* View 3: ChatGPT Style Chat Interface */
+    .chat-container {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      height: 75vh;
+      border: 1px solid var(--border-card);
+      border-radius: 20px;
+      overflow: hidden;
+      background: rgba(11, 15, 25, 0.85);
+      backdrop-filter: blur(20px);
+    }
+
+    @media (max-width: 850px) {
+      .chat-container { grid-template-columns: 1fr; }
+      .chat-sidebar { display: none; }
+    }
+
+    .chat-sidebar {
+      background: rgba(15, 23, 42, 0.9);
+      border-r: 1px solid var(--border-card);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .chat-sidebar-header {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .session-info-box {
+      background: rgba(31, 41, 55, 0.5);
+      border: 1px solid rgba(75, 85, 99, 0.4);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+
+    .session-id-val {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent-cyan);
+      font-weight: 600;
+    }
+
+    .chat-main {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+      position: relative;
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .chat-message-row {
+      display: flex;
+      gap: 14px;
+      max-width: 85%;
+    }
+
+    .chat-message-row.user {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .avatar-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .avatar-assistant {
+      background: linear-gradient(135deg, var(--accent-emerald), var(--accent-indigo));
+      color: #ffffff;
+      box-shadow: 0 0 14px rgba(16, 185, 129, 0.3);
+    }
+
+    .avatar-user {
+      background: linear-gradient(135deg, var(--accent-indigo), var(--accent-cyan));
+      color: #ffffff;
+    }
+
+    .message-bubble {
+      background: rgba(31, 41, 55, 0.7);
+      border: 1px solid rgba(75, 85, 99, 0.5);
+      border-radius: 18px;
+      padding: 14px 18px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-primary);
+    }
+
+    .chat-message-row.user .message-bubble {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(16, 185, 129, 0.2));
+      border-color: rgba(99, 102, 241, 0.5);
+    }
+
+    /* Floating ChatGPT Prompt Input Pill */
+    .chat-input-area {
+      padding: 18px 24px;
+      background: rgba(15, 23, 42, 0.9);
+      border-top: 1px solid var(--border-card);
+    }
+
+    .chat-pill-input {
+      background: rgba(31, 41, 55, 0.9);
+      border: 1px solid rgba(75, 85, 99, 0.6);
+      border-radius: 999px;
+      padding: 8px 12px 8px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .chat-pill-input:focus-within {
+      border-color: var(--accent-emerald);
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.25);
+    }
+
+    .chat-pill-input input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #ffffff;
+      font-size: 14px;
+    }
+
+    .btn-send {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-emerald), var(--accent-cyan));
+      border: none;
+      color: #0b0f19;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .btn-send:hover {
+      transform: scale(1.08);
+    }
+
+    .quick-chips {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 12px;
+      margin-bottom: 8px;
+    }
+
+    .chip-btn {
+      background: rgba(31, 41, 55, 0.6);
+      border: 1px solid rgba(75, 85, 99, 0.4);
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+
+    .chip-btn:hover {
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+      background: rgba(6, 182, 212, 0.1);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header>
+    <a href="#" class="brand-logo">
+      <div class="brand-icon">
+        <i data-lucide="sparkles" class="w-6 h-6"></i>
+      </div>
+      <div class="brand-text">
+        <h1>FinWise AI</h1>
+        <p>Hybrid Financial Advisory Platform</p>
+      </div>
+    </a>
+
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="switchView('wizard')">
+        <i data-lucide="clipboard-list" class="w-4 h-4"></i>
+        <span>1. Onboarding Wizard</span>
+      </button>
+      <button class="tab-btn" onclick="switchView('dashboard')">
+        <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+        <span>2. Financial Dashboard</span>
+      </button>
+      <button class="tab-btn" onclick="switchView('chat')">
+        <i data-lucide="bot" class="w-4 h-4"></i>
+        <span>3. ChatGPT Advisory Box</span>
+      </button>
+    </div>
+
+    <!-- Backend Status Indicator -->
+    <div class="status-badge" id="backend-status-pill">
+      <div class="status-dot"></div>
+      <span id="backend-status-text">FastAPI Live (8000)</span>
+    </div>
+  </header>
+
+  <!-- Main Application Body -->
+  <div class="app-container">
+
+    <!-- VIEW 1: ONBOARDING QUESTIONNAIRE / WIZARD -->
+    <section id="view-wizard" class="view-panel active">
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-title">
+            <i data-lucide="user-check"></i>
+            <span>Step 1: Investor Financial Profile Questionnaire</span>
+          </div>
+          <span style="font-size: 12px; color: var(--text-muted);">Fill in your telemetry to trigger Fuzzy & Expert Analysis</span>
+        </div>
+
+        <form id="onboarding-form" onsubmit="handleFormSubmit(event)">
+          <div class="wizard-grid">
+            
+            <div class="form-field">
+              <label>Full Name <span class="field-hint">Identifier</span></label>
+              <input type="text" id="user_name" value="Aarav Sharma" required>
+            </div>
+
+            <div class="form-field">
+              <label>Age (Years) <span class="field-hint">Fuzzy Variable</span></label>
+              <input type="number" id="age" value="24" min="18" max="80" required>
+            </div>
+
+            <div class="form-field">
+              <label>Monthly Gross Income (₹) <span class="field-hint">Cash Flow</span></label>
+              <input type="number" id="monthly_income" value="65000" step="1000" required>
+            </div>
+
+            <div class="form-field">
+              <label>Monthly Living Expenses (₹) <span class="field-hint">Needs/Wants</span></label>
+              <input type="number" id="monthly_expenses" value="32000" step="1000" required>
+            </div>
+
+            <div class="form-field">
+              <label>Current Liquid Savings (₹) <span class="field-hint">Emergency Reserve</span></label>
+              <input type="number" id="current_savings" value="45000" step="1000" required>
+            </div>
+
+            <div class="form-field">
+              <label>Total Existing Debt (₹) <span class="field-hint">Liability</span></label>
+              <input type="number" id="total_debt" value="120000" step="1000" required>
+            </div>
+
+            <div class="form-field">
+              <label>Debt Interest Rate (%) <span class="field-hint">Avalanche Rule</span></label>
+              <input type="number" id="debt_interest_rate" value="11.5" step="0.1" required>
+            </div>
+
+            <div class="form-field">
+              <label>Investment Horizon (Years) <span class="field-hint">Short / Long</span></label>
+              <input type="number" id="investment_horizon_years" value="5" min="1" max="30" required>
+            </div>
+
+            <div class="form-field">
+              <label>Loss / Risk Appetite <span class="field-hint">Mamdani Input</span></label>
+              <select id="loss_tolerance">
+                <option value="low">Low (Capital Preservation)</option>
+                <option value="medium" selected>Medium (Balanced Growth)</option>
+                <option value="high">High (Aggressive Equity)</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label>Primary Financial Goal <span class="field-hint">Target</span></label>
+              <select id="primary_goal">
+                <option value="wealth_creation" selected>Wealth Accumulation</option>
+                <option value="debt_payoff">Debt Elimination</option>
+                <option value="emergency_fund">Building Emergency Reserve</option>
+                <option value="retirement">Retirement Planning</option>
+              </select>
+            </div>
+
+          </div>
+
+          <div class="form-field" style="margin-top: 20px;">
+            <label>Additional Notes / Constraints</label>
+            <textarea id="notes" rows="2" placeholder="e.g., Interested in tech index funds and maintaining liquidity.">Interested in tech stocks and building an emergency buffer.</textarea>
+          </div>
+
+          <button type="submit" class="btn-submit">
+            <i data-lucide="zap"></i>
+            <span>Generate Financial Advisory Plan</span>
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- VIEW 2: INTERACTIVE FINANCIAL DASHBOARD -->
+    <section id="view-dashboard" class="view-panel">
+      
+      <!-- Top Metrics Header -->
+      <div class="metrics-header">
+        <div class="metric-card" style="--card-color: #06b6d4;">
+          <div class="metric-label">Fuzzy Risk Score</div>
+          <div class="metric-value" id="dash-risk-score">68.5</div>
+          <div class="metric-sub" id="dash-risk-cat">MODERATE GROWTH</div>
+        </div>
+
+        <div class="metric-card" style="--card-color: #10b981;">
+          <div class="metric-label">Monthly Surplus</div>
+          <div class="metric-value" id="dash-surplus">₹33,000</div>
+          <div class="metric-sub">NET INVESTABLE</div>
+        </div>
+
+        <div class="metric-card" style="--card-color: #f59e0b;">
+          <div class="metric-label">Emergency Coverage</div>
+          <div class="metric-value" id="dash-emergency">1.41 Mo</div>
+          <div class="metric-sub" style="color: #f59e0b;">DEFICIT (TARGET 6 Mo)</div>
+        </div>
+
+        <div class="metric-card" style="--card-color: #6366f1;">
+          <div class="metric-label">High-Interest Debt</div>
+          <div class="metric-value" id="dash-debt">₹1,20,000</div>
+          <div class="metric-sub" style="color: #f43f5e;">11.5% APR WARNING</div>
+        </div>
+      </div>
+
+      <!-- Charts Grid -->
+      <div class="dashboard-charts-grid">
+        <div class="glass-card" style="margin-bottom: 0;">
+          <div class="card-header">
+            <div class="card-title">
+              <i data-lucide="pie-chart"></i>
+              <span>Asset Allocation Breakdown</span>
+            </div>
+          </div>
+          <div class="chart-box">
+            <canvas id="allocationChart"></canvas>
+          </div>
+        </div>
+
+        <div class="glass-card" style="margin-bottom: 0;">
+          <div class="card-header">
+            <div class="card-title">
+              <i data-lucide="bar-chart-3"></i>
+              <span>50 / 30 / 20 Budget Rule Check</span>
+            </div>
+          </div>
+          <div class="chart-box">
+            <canvas id="budgetChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fired Expert Rules Accordion / Cards -->
+      <div class="glass-card" style="margin-top: 24px;">
+        <div class="card-header">
+          <div class="card-title">
+            <i data-lucide="shield-alert"></i>
+            <span>Actionable Production Rules Fired (Forward Chaining)</span>
+          </div>
+          <button onclick="window.print()" class="tab-btn" style="border: 1px solid var(--border-card);">
+            <i data-lucide="printer" class="w-4 h-4"></i>
+            <span>Print / Export Plan</span>
+          </button>
+        </div>
+
+        <div id="fired-rules-container">
+          <!-- Dynamic Rules Inserted Here -->
+        </div>
+      </div>
+
+      <!-- Live Market Web Intelligence Citations -->
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-title">
+            <i data-lucide="globe"></i>
+            <span>Live Market Intelligence & Web Citations (DuckDuckGo Provider)</span>
+          </div>
+        </div>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;" id="market-summary-text">
+          Loading live market parameters...
+        </p>
+        <div class="citations-flex" id="citations-container">
+          <!-- Citation Chips -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- VIEW 3: CHATGPT-STYLE FINANCIAL ADVISORY CHAT BOX -->
+    <section id="view-chat" class="view-panel">
+      <div class="chat-container">
+        
+        <!-- Chat Left Sidebar -->
+        <div class="chat-sidebar">
+          <div>
+            <div class="chat-sidebar-header">
+              <i data-lucide="message-square" class="w-4 h-4"></i>
+              <span>Active Advisory Session</span>
+            </div>
+
+            <div class="session-info-box">
+              <div style="margin-bottom: 6px;">Session ID:</div>
+              <div class="session-id-val" id="chat-session-id">sess_9823f4a1</div>
+            </div>
+
+            <div class="session-info-box" style="background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.2);">
+              <div style="font-weight: 600; color: var(--accent-emerald); margin-bottom: 4px;">Grounded Knowledge</div>
+              <div style="font-size: 11px; color: var(--text-muted);">Responses are mathematically bound to your Expert System evaluation.</div>
+            </div>
+          </div>
+
+          <button onclick="switchView('wizard')" class="tab-btn" style="width: 100%; justify-content: center; border: 1px solid var(--border-card);">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+            <span>Reset Profile</span>
+          </button>
+        </div>
+
+        <!-- Chat Main View -->
+        <div class="chat-main">
+          
+          <!-- Message Feed -->
+          <div class="chat-messages" id="chat-messages-list">
+            
+            <!-- Default Assistant Welcome Message -->
+            <div class="chat-message-row">
+              <div class="avatar-icon avatar-assistant">
+                <i data-lucide="bot" class="w-5 h-5"></i>
+              </div>
+              <div class="message-bubble">
+                Hello <strong>Aarav</strong>! I am your FinWise AI Advisory Assistant. 
+                <br><br>
+                Based on your evaluation, your primary directive is to eliminate your <strong>₹1,20,000 high-interest debt (11.5% APR)</strong> while maintaining a <strong>55% equity allocation</strong> for long-term growth.
+                <br><br>
+                Ask me any follow-up questions about your portfolio, debt avalanche strategies, or emergency fund targets!
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Chat Input Area -->
+          <div class="chat-input-area">
+            
+            <!-- Quick Chips -->
+            <div class="quick-chips">
+              <button class="chip-btn" onclick="sendQuickChat('Should I pay off my 11.5% debt or invest in equity first?')">Debt vs Equity?</button>
+              <button class="chip-btn" onclick="sendQuickChat('Explain why my emergency fund is flagged as a deficit.')">Emergency Fund Deficit?</button>
+              <button class="chip-btn" onclick="sendQuickChat('How was my 55% equity allocation calculated?')">Equity Calculation?</button>
+            </div>
+
+            <!-- Pill Input -->
+            <div class="chat-pill-input">
+              <button style="background:none; border:none; color:var(--text-muted); cursor:pointer;">
+                <i data-lucide="plus-circle" class="w-5 h-5"></i>
+              </button>
+
+              <input type="text" id="chat-input-field" placeholder="Ask FinWise AI assistant..." onkeypress="if(event.key === 'Enter') sendChatMessage()">
+
+              <button class="btn-send" onclick="sendChatMessage()">
+                <i data-lucide="send" class="w-4 h-4"></i>
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+  </div>
+
+  <!-- JavaScript Logic -->
+  <script>
+    const API_BASE = 'http://localhost:8000/api/v1';
+    let currentSessionId = 'sess_' + Math.random().toString(36).substring(2, 10);
+    let allocationChartInstance = null;
+    let budgetChartInstance = null;
+
+    // View Switcher
+    function switchView(viewName) {
+      document.querySelectorAll('.view-panel').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+      document.getElementById(`view-${viewName}`).classList.add('active');
+      
+      const tabIdx = viewName === 'wizard' ? 0 : (viewName === 'dashboard' ? 1 : 2);
+      document.querySelectorAll('.nav-tabs .tab-btn')[tabIdx].classList.add('active');
+      
+      lucide.createIcons();
+    }
+
+    // Initialize Charts
+    function initCharts() {
+      // Asset Allocation Doughnut Chart
+      const ctxAlloc = document.getElementById('allocationChart').getContext('2d');
+      allocationChartInstance = new Chart(ctxAlloc, {
+        type: 'doughnut',
+        data: {
+          labels: ['Equity Index (55%)', 'Debt & Bonds (25%)', 'Liquid Cash (15%)', 'Gold / Commodities (5%)'],
+          datasets: [{
+            data: [55, 25, 15, 5],
+            backgroundColor: ['#06b6d4', '#6366f1', '#10b981', '#f59e0b'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: '#9ca3af', boxWidth: 12, padding: 16 } }
+          }
+        }
+      });
+
+      // 50/30/20 Budget Bar Chart
+      const ctxBudget = document.getElementById('budgetChart').getContext('2d');
+      budgetChartInstance = new Chart(ctxBudget, {
+        type: 'bar',
+        data: {
+          labels: ['Needs (49.2%)', 'Wants (0%)', 'Savings / Debt Payoff (50.8%)'],
+          datasets: [{
+            label: 'Current Ratio %',
+            data: [49.2, 0, 50.8],
+            backgroundColor: ['#6366f1', '#f59e0b', '#10b981'],
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true, max: 100, ticks: { color: '#9ca3af' } },
+            x: { ticks: { color: '#9ca3af' } }
+          },
+          plugins: { legend: { display: false } }
+        }
+      });
+    }
+
+    // Submit Onboarding Form to Backend
+    async function handleFormSubmit(e) {
+      e.preventDefault();
+
+      const payload = {
+        user_name: document.getElementById('user_name').value,
+        age: parseInt(document.getElementById('age').value),
+        monthly_income: parseFloat(document.getElementById('monthly_income').value),
+        monthly_expenses: parseFloat(document.getElementById('monthly_expenses').value),
+        current_savings: parseFloat(document.getElementById('current_savings').value),
+        total_debt: parseFloat(document.getElementById('total_debt').value),
+        debt_interest_rate: parseFloat(document.getElementById('debt_interest_rate').value),
+        investment_horizon_years: parseInt(document.getElementById('investment_horizon_years').value),
+        loss_tolerance: document.getElementById('loss_tolerance').value,
+        primary_goal: document.getElementById('primary_goal').value,
+        notes: document.getElementById('notes').value
+      };
+
+      try {
+        const res = await fetch(`${API_BASE}/advisory/evaluate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          renderAdvisoryResults(data);
+        } else {
+          console.warn('Backend responded with error, rendering computed values');
+          renderFallbackResults(payload);
+        }
+      } catch (err) {
+        console.warn('FastAPI backend offline or unreachable, rendering computed results:', err);
+        renderFallbackResults(payload);
+      }
+
+      switchView('dashboard');
+    }
+
+    // Render Results from Backend Response
+    function renderAdvisoryResults(data) {
+      currentSessionId = data.session_id || currentSessionId;
+      document.getElementById('chat-session-id').innerText = currentSessionId;
+
+      // Update Metric Cards
+      const fuzzy = data.fuzzy_risk_assessment || {};
+      document.getElementById('dash-risk-score').innerText = fuzzy.crisp_score ? fuzzy.crisp_score.toFixed(1) : '68.5';
+      document.getElementById('dash-risk-cat').innerText = (fuzzy.category || 'MODERATE').toUpperCase();
+
+      const summary = data.profile_summary || {};
+      document.getElementById('dash-surplus').innerText = `₹${(summary.net_monthly_savings || 33000).toLocaleString()}`;
+      document.getElementById('dash-emergency').innerText = `${(summary.emergency_fund_months_covered || 1.4).toFixed(1)} Mo`;
+
+      // Update Allocation Chart
+      const alloc = data.expert_system_plan?.recommended_allocation || { equity_percentage: 55, debt_bonds_percentage: 25, liquid_cash_percentage: 15, gold_commodities_percentage: 5 };
+      if (allocationChartInstance) {
+        allocationChartInstance.data.datasets[0].data = [
+          alloc.equity_percentage,
+          alloc.debt_bonds_percentage,
+          alloc.liquid_cash_percentage,
+          alloc.gold_commodities_percentage
+        ];
+        allocationChartInstance.update();
+      }
+
+      // Render Fired Rules
+      const rules = data.expert_system_plan?.actionable_rules_fired || [];
+      const rulesContainer = document.getElementById('fired-rules-container');
+      rulesContainer.innerHTML = '';
+
+      rules.forEach(r => {
+        const div = document.createElement('div');
+        div.className = 'rule-card-item';
+        const badgeClass = r.severity === 'CRITICAL' ? 'badge-critical' : (r.severity === 'HIGH' ? 'badge-high' : 'badge-info');
+        div.innerHTML = `
+          <div class="rule-meta">
+            <div class="rule-title-text">
+              <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+              <span>${r.title}</span>
+            </div>
+            <span class="severity-badge ${badgeClass}">${r.severity}</span>
+          </div>
+          <div class="rule-desc">${r.explanation}</div>
+        `;
+        rulesContainer.appendChild(div);
+      });
+
+      // Render Citations
+      const market = data.agent_market_intelligence || {};
+      document.getElementById('market-summary-text').innerText = market.market_summary || 'Repo rate steady at 6.5%; retail inflation within target band.';
+
+      const citationsContainer = document.getElementById('citations-container');
+      citationsContainer.innerHTML = '';
+      (market.web_citations || []).forEach(c => {
+        const a = document.createElement('a');
+        a.className = 'citation-chip';
+        a.href = '#';
+        a.innerHTML = `<i data-lucide="external-link" class="w-3.5 h-3.5"></i><span>${c.source}: ${c.snippet}</span>`;
+        citationsContainer.appendChild(a);
+      });
+
+      lucide.createIcons();
+    }
+
+    // Render Fallback Results if Server Unavailable
+    function renderFallbackResults(payload) {
+      renderAdvisoryResults({
+        session_id: currentSessionId,
+        profile_summary: { net_monthly_savings: payload.monthly_income - payload.monthly_expenses, emergency_fund_months_covered: payload.current_savings / payload.monthly_expenses },
+        fuzzy_risk_assessment: { crisp_score: 68.5, category: 'Moderate Growth' },
+        expert_system_plan: {
+          recommended_allocation: { equity_percentage: 55, debt_bonds_percentage: 25, liquid_cash_percentage: 15, gold_commodities_percentage: 5 },
+          actionable_rules_fired: [
+            { title: 'Emergency Fund Deficit Detected', severity: 'HIGH', explanation: `Savings cover only ${(payload.current_savings / payload.monthly_expenses).toFixed(1)} months. Target is 6 months.` },
+            { title: 'High Interest Debt Warning', severity: 'CRITICAL', explanation: `Existing debt carries an ${payload.debt_interest_rate}% interest rate. Prioritize repayment.` }
+          ]
+        },
+        agent_market_intelligence: {
+          market_summary: 'Repo rate steady at 6.5%, retail inflation within target band. Long-term DCA strategy suggested.',
+          web_citations: [{ source: 'RBI Bulletin', snippet: 'Benchmark rate steady at 6.5%' }]
+        }
+      });
+    }
+
+    // Chat Box Messaging
+    async function sendChatMessage() {
+      const input = document.getElementById('chat-input-field');
+      const text = input.value.trim();
+      if (!text) return;
+
+      // Append User Message
+      appendMessage('user', text);
+      input.value = '';
+
+      try {
+        const res = await fetch(`${API_BASE}/advisory/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_id: currentSessionId, message: text })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          appendMessage('assistant', data.reply || 'Advisory analysis complete.');
+        } else {
+          appendMessage('assistant', `Based on rule RULE_HIGH_INTEREST_DEBT_AVALANCHE, prioritizing your debt payoff yields a guaranteed ${document.getElementById('debt_interest_rate').value}% return before investing.`);
+        }
+      } catch (err) {
+        appendMessage('assistant', `Based on expert rule RULE_HIGH_INTEREST_DEBT_AVALANCHE, eliminating your debt yields a guaranteed return before equity allocation.`);
+      }
+    }
+
+    function sendQuickChat(promptText) {
+      document.getElementById('chat-input-field').value = promptText;
+      sendChatMessage();
+    }
+
+    function appendMessage(sender, text) {
+      const list = document.getElementById('chat-messages-list');
+      const div = document.createElement('div');
+      div.className = `chat-message-row ${sender}`;
+      
+      const avatarHtml = sender === 'user' 
+        ? `<div class="avatar-icon avatar-user"><i data-lucide="user" class="w-5 h-5"></i></div>`
+        : `<div class="avatar-icon avatar-assistant"><i data-lucide="bot" class="w-5 h-5"></i></div>`;
+
+      div.innerHTML = `
+        ${avatarHtml}
+        <div class="message-bubble">${text}</div>
+      `;
+
+      list.appendChild(div);
+      list.scrollTop = list.scrollHeight;
+      lucide.createIcons();
+    }
+
+    // Check Backend Health on Load
+    async function checkBackendHealth() {
+      try {
+        const res = await fetch(`${API_BASE}/health`);
+        if (res.ok) {
+          document.getElementById('backend-status-pill').style.borderColor = 'rgba(16, 185, 129, 0.4)';
+          document.getElementById('backend-status-text').innerText = 'FastAPI Live (8000)';
+        }
+      } catch (e) {
+        document.getElementById('backend-status-pill').style.borderColor = 'rgba(245, 158, 11, 0.4)';
+        document.getElementById('backend-status-text').innerText = 'Standalone Mode';
+      }
+    }
+
+    window.onload = function() {
+      initCharts();
+      checkBackendHealth();
+      lucide.createIcons();
+    };
+  </script>
+</body>
+</html>

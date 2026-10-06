@@ -85,3 +85,10 @@ uvicorn backend.main:app --reload --port 8000
 - **Multi-Profile Validation**: `python test_dataset_validation.py` (8/8 profiles pass)
 - **PydanticAI Agent**: `python test_agent_standalone.py` (14/16 tests pass)
 
+### 3. Launch Web Dashboard & Chat UI (Step 1: Aryan)
+Open `frontend/index.html` directly in any modern browser, or serve locally:
+```bash
+python -m http.server 3000 --directory frontend
+```
+- **Live Client Dashboard**: [http://localhost:3000](http://localhost:3000)
+
